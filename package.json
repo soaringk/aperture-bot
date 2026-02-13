@@ -1,0 +1,32 @@
+{
+  "name": "aperture-bot",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "LifeOS personal agent — filter, integrate, pre-process",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "tsx src/main.ts",
+    "check": "biome check .",
+    "format": "biome format --write ."
+  },
+  "dependencies": {
+    "@mariozechner/pi-agent-core": "^0.52.10",
+    "@mariozechner/pi-ai": "^0.52.10",
+    "@sinclair/typebox": "^0.34.0",
+    "@slack/socket-mode": "^2.0.0",
+    "@slack/web-api": "^7.0.0",
+    "croner": "^9.0.0",
+    "dingtalk-stream": "^2.1.4",
+    "dotenv": "^16.4.0",
+    "simple-git": "^3.27.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

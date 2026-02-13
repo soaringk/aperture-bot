@@ -1,0 +1,20 @@
+[profile]
+name = "lifeos"
+
+[filesystem]
+# Read-write access to the data directory and app directory
+read_write = ["~/life-os", "/opt/lifeos"]
+# Read-only access to system and node
+read_only = ["/usr", "/etc/ssl", "/etc/resolv.conf"]
+
+[network]
+# Allow outbound connections (Slack WebSocket, DingTalk Stream, LLM APIs)
+allow_outbound = true
+# No inbound listeners needed (all connections are outbound)
+allow_inbound = false
+
+[process]
+# Allowed commands
+allow = ["node", "git"]
+# Blocked destructive patterns
+deny = ["rm -rf /", "dd if=", "chmod -R 777", "mkfs"]
