@@ -1,0 +1,19 @@
+---
+enabled: true
+maxProactivePerDay: 10
+quietHours:
+  start: "22:00"
+  end: "08:00"
+---
+
+## Schedules
+
+- id: morning-briefing
+  cron: "0 9 * * *"
+  channel: slack:DM
+  prompt: "Review my reminders and upcoming events. Summarize my day."
+
+- id: weekly-review
+  cron: "0 18 * * 5"
+  channel: slack:DM
+  prompt: "Summarize this week: what was accomplished, what's pending."

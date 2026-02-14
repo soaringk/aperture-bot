@@ -1,0 +1,13 @@
+services:
+  aperture-bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - DATA_DIR=/app/data
+      - NODE_ENV=production
+    volumes:
+      - aperture-data:/app/data
+
+volumes:
+  aperture-data:

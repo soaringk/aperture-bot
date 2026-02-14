@@ -1,0 +1,79 @@
+import { config as loadDotenv } from "dotenv";
+import { z } from "zod";
+import { ConfigError } from "./utils/errors.js";
+
+const ConfigSchema = z.object({
+  // Slack (optional — omit to disable)
+  slackBotToken: z.string().optional(),
+  slackAppToken: z.string().optional(),
+
+  // DingTalk (optional — omit to disable)
+  dingtalkClientId: z.string().optional(),
+  dingtalkClientSecret: z.string().optional(),
+  dingtalkRobotCode: z.string().optional(),
+
+  // LLM
+  anthropicApiKey: z.string().optional(),
+  openaiApiKey: z.string().optional(),
+
+  // Data
+  dataDir: z.string().default("./data"),
+
+  // Logging
+  logLevel: z
+    .enum(["trace", "debug", "info", "warn", "error", "fatal"])
+    .default("info"),
+});
+
+export type Config = z.infer<typeof ConfigSchema>;
+
+let cachedConfig: Config | null = null;
+
+export function loadConfig(): Config {
+  if (cachedConfig) return cachedConfig;
+
+  loadDotenv();
+
+  const result = ConfigSchema.safeParse({
+    slackBotToken: process.env.SLACK_BOT_TOKEN || undefined,
+    slackAppToken: process.env.SLACK_APP_TOKEN || undefined,
+    dingtalkClientId: process.env.DINGTALK_CLIENT_ID || undefined,
+    dingtalkClientSecret: process.env.DINGTALK_CLIENT_SECRET || undefined,
+    dingtalkRobotCode: process.env.DINGTALK_ROBOT_CODE || undefined,
+    anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+    openaiApiKey: process.env.OPENAI_API_KEY,
+    dataDir: process.env.DATA_DIR || "./data",
+    logLevel: process.env.LOG_LEVEL || "info",
+  });
+
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((i) => `  ${i.path.join(".")}: ${i.message}`)
+      .join("\n");
+    throw new ConfigError(`Invalid configuration:\n${issues}`);
+  }
+
+  // At least one channel must be configured
+  const hasSlack = result.data.slackBotToken && result.data.slackAppToken;
+  const hasDingTalk = result.data.dingtalkClientId && result.data.dingtalkClientSecret;
+  if (!hasSlack && !hasDingTalk) {
+    throw new ConfigError(
+      "At least one channel must be configured (Slack or DingTalk)",
+    );
+  }
+
+  // At least one LLM key must be set
+  if (!result.data.anthropicApiKey && !result.data.openaiApiKey) {
+    throw new ConfigError(
+      "At least one LLM API key must be set (ANTHROPIC_API_KEY or OPENAI_API_KEY)",
+    );
+  }
+
+  cachedConfig = result.data;
+  return cachedConfig;
+}
+
+/** Reset cached config (for testing) */
+export function resetConfig(): void {
+  cachedConfig = null;
+}
