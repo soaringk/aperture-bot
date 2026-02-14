@@ -18,6 +18,7 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@larksuiteoapi/node-sdk": "^1.41.0",
     "@mariozechner/pi-agent-core": "^0.52.12",
     "@mariozechner/pi-ai": "^0.52.12",
     "@slack/socket-mode": "^2.0.0",
@@ -26,6 +27,7 @@
     "croner": "^9.1.0",
     "dingtalk-stream": "^2.1.4",
     "dotenv": "^16.0.0",
+    "grammy": "^1.40.0",
     "gray-matter": "^4.0.3",
     "pino": "^9.0.0",
     "zod": "^3.22.0"

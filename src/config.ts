@@ -12,6 +12,14 @@ const ConfigSchema = z.object({
   dingtalkClientSecret: z.string().optional(),
   dingtalkRobotCode: z.string().optional(),
 
+  // Feishu/Lark (optional — omit to disable)
+  feishuAppId: z.string().optional(),
+  feishuAppSecret: z.string().optional(),
+  feishuDomain: z.enum(["feishu", "lark"]).default("feishu"),
+
+  // Telegram (optional — omit to disable)
+  telegramBotToken: z.string().optional(),
+
   // LLM
   anthropicApiKey: z.string().optional(),
   openaiApiKey: z.string().optional(),
@@ -40,6 +48,10 @@ export function loadConfig(): Config {
     dingtalkClientId: process.env.DINGTALK_CLIENT_ID || undefined,
     dingtalkClientSecret: process.env.DINGTALK_CLIENT_SECRET || undefined,
     dingtalkRobotCode: process.env.DINGTALK_ROBOT_CODE || undefined,
+    feishuAppId: process.env.FEISHU_APP_ID || undefined,
+    feishuAppSecret: process.env.FEISHU_APP_SECRET || undefined,
+    feishuDomain: process.env.FEISHU_DOMAIN || "feishu",
+    telegramBotToken: process.env.TELEGRAM_BOT_TOKEN || undefined,
     anthropicApiKey: process.env.ANTHROPIC_API_KEY,
     openaiApiKey: process.env.OPENAI_API_KEY,
     dataDir: process.env.DATA_DIR || "./data",
@@ -56,9 +68,11 @@ export function loadConfig(): Config {
   // At least one channel must be configured
   const hasSlack = result.data.slackBotToken && result.data.slackAppToken;
   const hasDingTalk = result.data.dingtalkClientId && result.data.dingtalkClientSecret;
-  if (!hasSlack && !hasDingTalk) {
+  const hasFeishu = result.data.feishuAppId && result.data.feishuAppSecret;
+  const hasTelegram = !!result.data.telegramBotToken;
+  if (!hasSlack && !hasDingTalk && !hasFeishu && !hasTelegram) {
     throw new ConfigError(
-      "At least one channel must be configured (Slack or DingTalk)",
+      "At least one channel must be configured (Slack, DingTalk, Feishu, or Telegram)",
     );
   }
 

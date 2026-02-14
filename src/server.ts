@@ -4,6 +4,8 @@ import type { Config } from "./config.js";
 import { ChannelRegistry } from "./channels/registry.js";
 import { SlackAdapter } from "./channels/slack/adapter.js";
 import { DingTalkAdapter } from "./channels/dingtalk/adapter.js";
+import { FeishuAdapter } from "./channels/feishu/adapter.js";
+import { TelegramAdapter } from "./channels/telegram/adapter.js";
 import { AgentHub } from "./core/agent-hub.js";
 import { HeartbeatEngine } from "./proactive/heartbeat.js";
 import { EventsWatcher } from "./proactive/events-watcher.js";
@@ -50,6 +52,24 @@ export class Server {
       });
       this.channels.register(dingtalk);
       log.info("DingTalk channel configured");
+    }
+
+    if (config.feishuAppId && config.feishuAppSecret) {
+      const feishu = new FeishuAdapter({
+        appId: config.feishuAppId,
+        appSecret: config.feishuAppSecret,
+        domain: config.feishuDomain,
+      });
+      this.channels.register(feishu);
+      log.info("Feishu channel configured");
+    }
+
+    if (config.telegramBotToken) {
+      const telegram = new TelegramAdapter({
+        botToken: config.telegramBotToken,
+      });
+      this.channels.register(telegram);
+      log.info("Telegram channel configured");
     }
 
     // Wire channel messages to agent hub

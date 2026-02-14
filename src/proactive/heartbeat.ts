@@ -8,6 +8,8 @@ import type { ISession, IMessageChannel } from "../channels/types.js";
 import type { ChannelRegistry } from "../channels/registry.js";
 import { SlackAdapter } from "../channels/slack/adapter.js";
 import { DingTalkAdapter } from "../channels/dingtalk/adapter.js";
+import { FeishuAdapter } from "../channels/feishu/adapter.js";
+import { TelegramAdapter } from "../channels/telegram/adapter.js";
 import { createChildLogger } from "../utils/logger.js";
 
 const log = createChildLogger("heartbeat");
@@ -158,6 +160,18 @@ export class HeartbeatEngine {
 
     // For "dingtalk:DM", create a DM session with the user's staffId
     if (channel instanceof DingTalkAdapter && target === "DM") {
+      const session = await channel.createDmSession(userId);
+      return { channel, session };
+    }
+
+    // For "feishu:DM", create a DM session with the user's openId
+    if (channel instanceof FeishuAdapter && target === "DM") {
+      const session = await channel.createDmSession(userId);
+      return { channel, session };
+    }
+
+    // For "telegram:DM", create a DM session with the user's chatId
+    if (channel instanceof TelegramAdapter && target === "DM") {
       const session = await channel.createDmSession(userId);
       return { channel, session };
     }
