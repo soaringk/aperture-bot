@@ -66,13 +66,18 @@ export function loadConfig(): Config {
   }
 
   // At least one channel must be configured
-  const hasSlack = result.data.slackBotToken && result.data.slackAppToken;
-  const hasDingTalk = result.data.dingtalkClientId && result.data.dingtalkClientSecret;
-  const hasFeishu = result.data.feishuAppId && result.data.feishuAppSecret;
-  const hasTelegram = !!result.data.telegramBotToken;
-  if (!hasSlack && !hasDingTalk && !hasFeishu && !hasTelegram) {
+  const channels = [
+    { name: "Slack", configured: result.data.slackBotToken && result.data.slackAppToken },
+    { name: "DingTalk", configured: result.data.dingtalkClientId && result.data.dingtalkClientSecret },
+    { name: "Feishu", configured: result.data.feishuAppId && result.data.feishuAppSecret },
+    { name: "Telegram", configured: !!result.data.telegramBotToken },
+  ];
+
+  const hasAnyChannel = channels.some((ch) => ch.configured);
+  if (!hasAnyChannel) {
+    const channelNames = channels.map((ch) => ch.name).join(", ");
     throw new ConfigError(
-      "At least one channel must be configured (Slack, DingTalk, Feishu, or Telegram)",
+      `At least one channel must be configured (${channelNames})`,
     );
   }
 

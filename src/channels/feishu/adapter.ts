@@ -61,8 +61,7 @@ export class FeishuAdapter implements IMessageChannel {
   private dedupCounter = 0;
 
   constructor(private readonly options: FeishuAdapterOptions) {
-    const domain =
-      options.domain === "lark" ? lark.Domain.Lark : lark.Domain.Feishu;
+    const domain = this.resolveDomain(options.domain);
 
     this.client = new lark.Client({
       appId: options.appId,
@@ -73,8 +72,7 @@ export class FeishuAdapter implements IMessageChannel {
   }
 
   async connect(): Promise<void> {
-    const domain =
-      this.options.domain === "lark" ? lark.Domain.Lark : lark.Domain.Feishu;
+    const domain = this.resolveDomain(this.options.domain);
 
     const eventDispatcher = new lark.EventDispatcher({}).register({
       "im.message.receive_v1": async (data: any) => {
@@ -117,7 +115,7 @@ export class FeishuAdapter implements IMessageChannel {
         content: JSON.stringify({ text }),
       },
     });
-    return res?.data?.message_id ?? `feishu_${Date.now()}`;
+    return this.extractMessageId(res);
   }
 
   async sendThreadReply(session: ISession, text: string): Promise<string> {
@@ -129,7 +127,7 @@ export class FeishuAdapter implements IMessageChannel {
           content: JSON.stringify({ text }),
         },
       });
-      return res?.data?.message_id ?? `feishu_${Date.now()}`;
+      return this.extractMessageId(res);
     }
     return this.sendMessage(session, text);
   }
@@ -184,7 +182,7 @@ export class FeishuAdapter implements IMessageChannel {
         content: JSON.stringify({ text }),
       },
     });
-    return res?.data?.message_id ?? `feishu_${Date.now()}`;
+    return this.extractMessageId(res);
   }
 
   private async handleInbound(data: FeishuMessageEvent): Promise<void> {
@@ -289,5 +287,13 @@ export class FeishuAdapter implements IMessageChannel {
         if (ts < cutoff) this.processedMessages.delete(key);
       }
     }
+  }
+
+  private resolveDomain(domain: "feishu" | "lark" | undefined): lark.Domain {
+    return domain === "lark" ? lark.Domain.Lark : lark.Domain.Feishu;
+  }
+
+  private extractMessageId(res: any): string {
+    return res?.data?.message_id ?? `feishu_${Date.now()}`;
   }
 }

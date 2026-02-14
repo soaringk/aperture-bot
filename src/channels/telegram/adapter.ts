@@ -81,10 +81,13 @@ export class TelegramAdapter implements IMessageChannel {
   async sendThreadReply(session: ISession, text: string): Promise<string> {
     const chatId = Number(session.channelId);
     const threadId = session.threadId ? Number(session.threadId) : undefined;
-    const result = await this.bot.api.sendMessage(chatId, text, {
-      parse_mode: "HTML",
-      ...(threadId ? { message_thread_id: threadId } : {}),
-    });
+
+    const options: any = { parse_mode: "HTML" };
+    if (threadId) {
+      options.message_thread_id = threadId;
+    }
+
+    const result = await this.bot.api.sendMessage(chatId, text, options);
     return String(result.message_id);
   }
 
@@ -135,8 +138,7 @@ export class TelegramAdapter implements IMessageChannel {
 
     const chatId = String(msg.chat.id);
     const userId = String(msg.from.id);
-    const userName =
-      msg.from.username || `${msg.from.first_name || ""} ${msg.from.last_name || ""}`.trim() || userId;
+    const userName = this.resolveUserName(msg.from, userId);
 
     let text = msg.text;
 
@@ -187,5 +189,18 @@ export class TelegramAdapter implements IMessageChannel {
     for (const handler of this.handlers) {
       await handler(message, session);
     }
+  }
+
+  private resolveUserName(from: any, fallbackUserId: string): string {
+    if (from.username) {
+      return from.username;
+    }
+
+    const fullName = `${from.first_name || ""} ${from.last_name || ""}`.trim();
+    if (fullName) {
+      return fullName;
+    }
+
+    return fallbackUserId;
   }
 }

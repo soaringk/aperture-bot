@@ -152,31 +152,13 @@ export class HeartbeatEngine {
     const channel = this.channels.get(channelType);
     if (!channel) return { channel: undefined, session: undefined };
 
-    // For "slack:DM", open a DM with the user
-    if (channel instanceof SlackAdapter && target === "DM") {
-      const session = await channel.createDmSession(userId);
+    // For DM targets, delegate to the adapter's createDmSession method
+    if (target === "DM") {
+      const session = await this.createDmForChannel(channel, userId);
       return { channel, session };
     }
 
-    // For "dingtalk:DM", create a DM session with the user's staffId
-    if (channel instanceof DingTalkAdapter && target === "DM") {
-      const session = await channel.createDmSession(userId);
-      return { channel, session };
-    }
-
-    // For "feishu:DM", create a DM session with the user's openId
-    if (channel instanceof FeishuAdapter && target === "DM") {
-      const session = await channel.createDmSession(userId);
-      return { channel, session };
-    }
-
-    // For "telegram:DM", create a DM session with the user's chatId
-    if (channel instanceof TelegramAdapter && target === "DM") {
-      const session = await channel.createDmSession(userId);
-      return { channel, session };
-    }
-
-    // For "slack:C12345", use the channel ID directly
+    // For explicit channel IDs, construct session directly
     const session: ISession = {
       sessionId: `${channelType}:${target}:proactive`,
       channelType,
@@ -184,6 +166,32 @@ export class HeartbeatEngine {
       userId,
     };
     return { channel, session };
+  }
+
+  /**
+   * Create a DM session using the appropriate adapter method.
+   */
+  private async createDmForChannel(
+    channel: IMessageChannel,
+    userId: string,
+  ): Promise<ISession | undefined> {
+    if (channel instanceof SlackAdapter) {
+      return channel.createDmSession(userId);
+    }
+
+    if (channel instanceof DingTalkAdapter) {
+      return channel.createDmSession(userId);
+    }
+
+    if (channel instanceof FeishuAdapter) {
+      return channel.createDmSession(userId);
+    }
+
+    if (channel instanceof TelegramAdapter) {
+      return channel.createDmSession(userId);
+    }
+
+    return undefined;
   }
 }
 
